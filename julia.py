@@ -1,16 +1,15 @@
-import cmath
-import cv2
+import Image
 import numpy as np
 
-from math import exp, log
+from math import log
 from matplotlib.pyplot import get_cmap
 
 width = 0.5
 height = 0.5
 center = complex(0,0)
 
-xPixels = 2048
-yPixels = 2048
+xPixels = 1024
+yPixels = 1024
 
 maxIterations = 900
 zLimit = 2.0
@@ -62,13 +61,13 @@ if __name__ == '__main__':
             longestIter = smoothedIter
         grid[i, j] = smoothedIter
 
-    print 'Longest iteration: ' + str(longestIter)
+    print('Longest iteration: %d' % longestIter)
 
     image = np.ndarray(shape=(yPixels, xPixels, 3), dtype=np.uint8)
 
     for (i, j), v in np.ndenumerate(grid):
         image[i, j] = colorize(v, longestIter)
 
-    cv2.imshow('Julia', image)
-    cv2.waitKey(0)
-    cv2.imwrite('julia.png', image)
+    img = Image.fromarray(image, 'RGB')
+    img.save('julia.png')
+
