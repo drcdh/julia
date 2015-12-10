@@ -24,55 +24,55 @@ import numpy as np
 from math import log
 from matplotlib.pyplot import get_cmap
 
-maxIterations = 900
+max_iterations = 900
 
 def f(z):
-    return pow(z,2) + C
+    return pow(z, 2) + C
 
 def calc_p(final, penult):
     return log(abs(final))/log(abs(penult))
 
 def iterate(zn, znm1=None, n=0):
     norm = abs(zn)
-    if norm > zLimit:
+    if norm > z_limit:
         return norm, n
-    if n >= maxIterations:
-        return zLimit, maxIterations
+    if n >= max_iterations:
+        return z_limit, max_iterations
     znp1 = f(zn)
     return iterate(znp1, zn, n+1)
 
-def pixelCoord(i,j):
-    px = (1.0/(2.0*zoom))*float(j-imgsize/2)/float(imgsize/2)
-    py = (1.0/(2.0*zoom))*float(i-imgsize/2)/float(imgsize/2)
+def pixelCoord(i, j):
+    px = (1.0/(2.0*zoom))*float(i-imgsize/2)/float(imgsize/2)
+    py = (1.0/(2.0*zoom))*float(j-imgsize/2)/float(imgsize/2)
     pz = center + complex(px, py)
     return pz
 
 def colorize(i, norm, cmap):
     c = float(i)/float(norm)
-    r, g, b, l = cmap(c)
-    return [int(255*x) for x in (b, g, r)]
+    r, g, b, _ = cmap(c)
+    return [int(255*x) for x in (r, g, b)]
 
 if __name__ == '__main__':
-    global C, imgsize, center, zoom, zLimit
+    global C, imgsize, center, zoom, z_limit
 
     arg = docopt(__doc__, options_first=True)
     C = complex(*map(float, [arg['<z_r>'], arg['<z_i>']]))
     imgsize = int(arg['--imgsize'])
     center = complex(*map(float, arg['--center'].split(',')))
     zoom = float(arg['--zoom'])
-    zLimit = float(arg['--zlimit'])
+    z_limit = float(arg['--zlimit'])
     cmap = get_cmap(arg['--cmap'])
 
     grid = np.ndarray(shape=(imgsize, imgsize), dtype=np.uint8)
 
     longestIter = 0.0
 
-    for (j, i), v in np.ndenumerate(grid):
-        pz = pixelCoord(i,j)
+    for (i, j), v in np.ndenumerate(grid):
+        pz = pixelCoord(i, j)
         finalMag, numIter = iterate(pz)
         smoothedIter = numIter
         if arg['--soften']:
-            smoothedIter += 1.0 + log(log(zLimit)/log(finalMag))/log(2.0)
+            smoothedIter += 1.0 + log(log(z_limit)/log(finalMag))/log(2.0)
         if smoothedIter > longestIter:
             longestIter = smoothedIter
         grid[i, j] = smoothedIter
